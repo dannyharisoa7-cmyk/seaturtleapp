@@ -16,7 +16,7 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen>
     with TickerProviderStateMixin {
-  static const String _correctPin = '270697';
+  static const String _correctPin = '123456';
   String _enteredPin = '';
   bool _isError = false;
   int _errorCount = 0;
