@@ -1,0 +1,66 @@
+[
+  {
+    "id": "1",
+    "cost_category": "CAPITAL EXPENDITURES",
+    "amendment": 450000.0,
+    "total_spend": 312500.0,
+    "rest_against_amendment": 137500.0,
+    "description": "Equipment & Infrastructure"
+  },
+  {
+    "id": "2",
+    "cost_category": "Operational and Maintenance",
+    "amendment": 180000.0,
+    "total_spend": 134200.0,
+    "rest_against_amendment": 45800.0,
+    "description": "Day-to-day operations"
+  },
+  {
+    "id": "3",
+    "cost_category": "Consultancies",
+    "amendment": 95000.0,
+    "total_spend": 87300.0,
+    "rest_against_amendment": 7700.0,
+    "description": "Expert advisory services"
+  },
+  {
+    "id": "4",
+    "cost_category": "Training & Capacity Building",
+    "amendment": 62000.0,
+    "total_spend": 41800.0,
+    "rest_against_amendment": 20200.0,
+    "description": "Staff development programs"
+  },
+  {
+    "id": "5",
+    "cost_category": "Research & Monitoring",
+    "amendment": 78500.0,
+    "total_spend": 55600.0,
+    "rest_against_amendment": 22900.0,
+    "description": "Environmental studies"
+  },
+  {
+    "id": "6",
+    "cost_category": "Community Engagement",
+    "amendment": 35000.0,
+    "total_spend": 28100.0,
+    "rest_against_amendment": 6900.0,
+    "description": "Local outreach initiatives"
+  },
+  {
+    "id": "7",
+    "cost_category": "Administrative Costs",
+    "amendment": 42000.0,
+    "total_spend": 39800.0,
+    "rest_against_amendment": 2200.0,
+    "description": "Office & management expenses"
+  },
+  {
+    "id": "8",
+    "cost_category": "Communication & Visibility",
+    "amendment": 28000.0,
+    "total_spend": 18700.0,
+    "rest_against_amendment": 9300.0,
+    "description": "Media & reporting activities"
+  }
+]

@@ -1,0 +1,40 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+flutter_*.png
+flutter_*.jar
+.env.*.json
+.env.json
+local.properties
+
+# Android
+.gradle/
+.idea/
+local.properties
+*.iml
+*.apk
+*.jks
+*.keystore
+key.properties
+
+# iOS
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Flutter.xcframework
+ios/Flutter/generated.xcconfig
+ios/Flutter/ephemeral.cirrus.yml
+ios/Flutter/flutter.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Misc
+*.swp
+*.swo
+*~
+.DS_Store
+*.log
