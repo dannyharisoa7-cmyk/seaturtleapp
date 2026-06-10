@@ -1,96 +1,155 @@
-// lib/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:animate_do/animate_do.dart';
-import '../providers/budget_provider.dart';
-import '../utils/app_theme.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/sea_turtle_logo.dart';
-import 'grants_list_screen.dart';
-import 'simulation_screen.dart';
+import 'budget_provider.dart';
+import 'utils/app_theme.dart';
+import 'glass_card.dart';
+import 'sea_turtle_logo.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
-
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = const [
-    _DashboardHome(),
-    GrantsListScreen(),
-    SimulationScreen(),
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.oceanGradient),
-        child: _pages[_selectedIndex],
-      ),
-      bottomNavigationBar: _BottomNav(
-        selectedIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
-      ),
-    );
-  }
-}
+        child: SafeArea(
+          child: Consumer<BudgetProvider>(
+            builder: (context, provider, _) {
+              if (provider.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.accentCyan),
+                );
+              }
 
-// ─── Bottom Navigation ────────────────────────────────────────────────────────
+              if (provider.error != null) {
+                return Center(
+                  child: Text(
+                    provider.error!,
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
 
-class _BottomNav extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  const _BottomNav({required this.selectedIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.oceanBlue.withOpacity(0.8),
-            AppColors.deepOcean,
-          ],
-        ),
-        border: Border(
-          top: BorderSide(
-              color: AppColors.glassBorder, width: 1),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.dashboard_rounded,
-                label: 'Dashboard',
-                selected: selectedIndex == 0,
-                onTap: () => onTap(0),
-              ),
-              _NavItem(
-                icon: Icons.list_alt_rounded,
-                label: 'Subventions',
-                selected: selectedIndex == 1,
-                onTap: () => onTap(1),
-              ),
-              _NavItem(
-                icon: Icons.science_rounded,
-                label: 'Simulation',
-                selected: selectedIndex == 2,
-                onTap: () => onTap(2),
-              ),
-            ],
+              return Column(
+                children: [
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        const SeaTurtleLogo(size: 42, showLabel: false),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Sea Turtle Budget',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Recherche budgétaire par mot-clé sur chaque ligne',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: GlassCard(
+                      child: TextField(
+                        key: const Key('searchField'),
+                        onChanged: provider.updateSearchQuery,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher code, catégorie, montant...',
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.accentCyan,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: GlassCard(
+                      gradient: const LinearGradient(
+                        colors: [Color(0x221A7FD4), Color(0x1100D4FF)],
+                      ),
+                      borderColor: AppColors.accentCyan.withOpacity(0.4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _SummaryValue(
+                              label: 'Lignes',
+                              value: provider.resultCount.toString(),
+                            ),
+                            _SummaryValue(
+                              label: 'Budget total',
+                              value: provider.totalAmendment.toStringAsFixed(0),
+                            ),
+                            _SummaryValue(
+                              label: 'Dépensé',
+                              value: provider.totalSpend.toStringAsFixed(0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: provider.filteredItems.isEmpty
+                        ? Center(
+                            child: Text(
+                              provider.searchQuery.isEmpty
+                                  ? 'Aucune ligne trouvée pour le moment.'
+                                  : 'Aucune ligne ne correspond à "${provider.searchQuery}"',
+                              style: const TextStyle(color: Colors.white70),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: provider.filteredItems.length,
+                            itemBuilder: (context, index) {
+                              final item = provider.filteredItems[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _BudgetRowCard(item: item),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -98,51 +157,92 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
-  final IconData icon;
+class _SummaryValue extends StatelessWidget {
   final String label;
-  final bool selected;
-  final VoidCallback onTap;
+  final String value;
 
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
+  const _SummaryValue({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: selected
-              ? AppColors.brightBlue.withOpacity(0.2)
-              : Colors.transparent,
-          border: selected
-              ? Border.all(color: AppColors.accentCyan.withOpacity(0.3))
-              : null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(
+                color: AppColors.accentCyan,
+                fontSize: 10,
+                letterSpacing: 1.5,
+              ),
         ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BudgetRowCard extends StatelessWidget {
+  final GrantItem item;
+
+  const _BudgetRowCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.accentCyan : Colors.white38,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
             Text(
-              label,
-              style: TextStyle(
-                color: selected ? AppColors.accentCyan : Colors.white38,
-                fontSize: 11,
-                fontWeight:
-                    selected ? FontWeight.w600 : FontWeight.w400,
+              item.costCategory,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (item.description.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                item.description,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _DataLabel(label: 'Amendement', value: item.formattedAmendment),
+                _DataLabel(label: 'Dépensé', value: item.formattedTotalSpend),
+                _DataLabel(label: 'Solde', value: item.formattedRest),
+              ],
+            ),
+            const SizedBox(height: 10),
+            LinearProgressIndicator(
+              value: item.amendment > 0
+                  ? (item.totalSpend / item.amendment).clamp(0.0, 1.0)
+                  : 0,
+              minHeight: 6,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                item.utilizationRate >= 100
+                    ? AppColors.errorRed
+                    : AppColors.accentCyan,
               ),
             ),
           ],
@@ -152,194 +252,36 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ─── Dashboard Home Page ──────────────────────────────────────────────────────
+class _DataLabel extends StatelessWidget {
+  final String label;
+  final String value;
 
-class _DashboardHome extends StatelessWidget {
-  const _DashboardHome();
+  const _DataLabel({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BudgetProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppColors.accentCyan),
-          );
-        }
-
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header row
-                      FadeInDown(
-                        child: Row(
-                          children: [
-                            const SeaTurtleLogo(size: 42, showLabel: false),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ShaderMask(
-                                    shaderCallback: (b) =>
-                                        AppColors.accentGradient
-                                            .createShader(b),
-                                    child: Text(
-                                      'SEA TURTLE',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displayMedium
-                                          ?.copyWith(
-                                              fontSize: 18, color: Colors.white),
-                                    ),
-                                  ),
-                                  Text(
-                                    'Grants Management System',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                            color:
-                                                Colors.white.withOpacity(0.5),
-                                            fontSize: 11),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            GlassCard(
-                              padding: const EdgeInsets.all(10),
-                              borderRadius: BorderRadius.circular(14),
-                              child: const Icon(
-                                Icons.notifications_outlined,
-                                color: AppColors.accentCyan,
-                                size: 22,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Main KPI card
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 150),
-                        child: _HeroKpiCard(provider: provider),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Stat grid
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 250),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: StatCard(
-                                label: 'Budget Total',
-                                value: provider.totalRealAmendment.toUSD(),
-                                accentColor: AppColors.brightBlue,
-                                icon: Icons.account_balance_outlined,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: StatCard(
-                                label: 'Dépensé',
-                                value: provider.totalRealSpend.toUSD(),
-                                accentColor: AppColors.accentTeal,
-                                icon: Icons.payments_outlined,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 350),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: StatCard(
-                                label: 'Solde Restant',
-                                value: provider.totalRealRest.toUSD(),
-                                accentColor: AppColors.accentCyan,
-                                icon: Icons.savings_outlined,
-                                subtitle: 'Contre amendement',
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: StatCard(
-                                label: 'Utilisation',
-                                value:
-                                    '${provider.overallUtilization.toStringAsFixed(1)}%',
-                                accentColor: _utilizationColor(
-                                    provider.overallUtilization),
-                                icon: Icons.donut_large_outlined,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Section title
-                      FadeInLeft(
-                        delay: const Duration(milliseconds: 450),
-                        child: Text(
-                          'CATÉGORIES DE COÛTS',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(fontSize: 12, letterSpacing: 1.8),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Grant items list
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = provider.realItems[index];
-                  return FadeInUp(
-                    delay: Duration(milliseconds: 500 + index * 80),
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                      child: _GrantListTile(item: item),
-                    ),
-                  );
-                },
-                childCount: provider.realItems.length,
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white60,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
-  }
-
-  Color _utilizationColor(double rate) {
-    if (rate >= 90) return AppColors.errorRed;
-    if (rate >= 70) return AppColors.warningAmber;
-    return AppColors.successGreen;
   }
 }
 

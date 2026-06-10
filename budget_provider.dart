@@ -1,37 +1,34 @@
-// lib/providers/budget_provider.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/grant_model.dart';
+import 'grant_model.dart';
 
 class BudgetProvider extends ChangeNotifier {
-  List<GrantItem> _realItems = [];
-  List<GrantItem> _forecastItems = [];
-  double _globalMultiplier = 1.0;
+  final List<GrantItem> _items = [];
+  String _searchQuery = '';
   bool _isLoading = true;
   String? _error;
 
-  // Getters
-  List<GrantItem> get realItems => _realItems;
-  List<GrantItem> get forecastItems => _forecastItems;
-  double get globalMultiplier => _globalMultiplier;
+  List<GrantItem> get allItems => List.unmodifiable(_items);
+  List<GrantItem> get filteredItems {
+    if (_searchQuery.isEmpty) return allItems;
+    return _items.where((item) => item.matchesQuery(_searchQuery)).toList();
+  }
+
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String get searchQuery => _searchQuery;
+  int get resultCount => filteredItems.length;
 
-  BudgetScenario get realScenario => BudgetScenario(
-        name: 'Scénario A — Réel',
-        type: 'real',
-        items: _realItems,
-      );
+  double get totalAmendment =>
+      _items.fold(0, (sum, item) => sum + item.amendment);
+  double get totalSpend =>
+      _items.fold(0, (sum, item) => sum + item.totalSpend);
+  double get totalRest =>
+      _items.fold(0, (sum, item) => sum + item.restAgainstAmendment);
 
-  BudgetScenario get forecastScenario => BudgetScenario(
-        name: 'Scénario B — Prévisionnel',
-        type: 'forecast',
-        items: _forecastItems,
-        multiplier: _globalMultiplier,
-      );
-
-  // ─── Data Loading ─────────────────────────────────────────────────────────
+  double get overallUtilization =>
+      totalAmendment > 0 ? (totalSpend / totalAmendment) * 100 : 0;
 
   Future<void> loadData() async {
     try {
@@ -39,15 +36,12 @@ class BudgetProvider extends ChangeNotifier {
       notifyListeners();
 
       final String jsonString =
-          await rootBundle.loadString('assets/data/grants.json');
+          await rootBundle.loadString('assets/data/spend_against_budget.json');
       final List<dynamic> jsonList = json.decode(jsonString) as List<dynamic>;
-
-      _realItems = jsonList
+      _items.clear();
+      _items.addAll(jsonList
           .map((e) => GrantItem.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      // Initialize forecast as copy of real
-      _forecastItems = List.from(_realItems);
+          .toList());
 
       _isLoading = false;
       _error = null;
@@ -58,57 +52,8 @@ class BudgetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Simulation Logic ──────────────────────────────────────────────────────
-
-  void applyGlobalMultiplier(double multiplier) {
-    _globalMultiplier = multiplier;
-    _forecastItems = _realItems.map((item) {
-      final newAmendment = item.amendment * multiplier;
-      final newRest = newAmendment - item.totalSpend;
-      return item.copyWith(
-        amendment: newAmendment,
-        restAgainstAmendment: newRest,
-      );
-    }).toList();
+  void updateSearchQuery(String query) {
+    _searchQuery = query;
     notifyListeners();
   }
-
-  void updateForecastAmendment(String id, double newAmendment) {
-    _forecastItems = _forecastItems.map((item) {
-      if (item.id == id) {
-        final newRest = newAmendment - item.totalSpend;
-        return item.copyWith(
-          amendment: newAmendment,
-          restAgainstAmendment: newRest,
-        );
-      }
-      return item;
-    }).toList();
-    notifyListeners();
-  }
-
-  void resetForecast() {
-    _globalMultiplier = 1.0;
-    _forecastItems = List.from(_realItems);
-    notifyListeners();
-  }
-
-  // ─── Computed Totals ───────────────────────────────────────────────────────
-
-  double get totalRealAmendment =>
-      _realItems.fold(0, (s, i) => s + i.amendment);
-  double get totalRealSpend =>
-      _realItems.fold(0, (s, i) => s + i.totalSpend);
-  double get totalRealRest =>
-      _realItems.fold(0, (s, i) => s + i.restAgainstAmendment);
-
-  double get totalForecastAmendment =>
-      _forecastItems.fold(0, (s, i) => s + i.amendment);
-  double get totalForecastRest =>
-      _forecastItems.fold(0, (s, i) => s + i.restAgainstAmendment);
-
-  double get overallUtilization =>
-      totalRealAmendment > 0
-          ? (totalRealSpend / totalRealAmendment) * 100
-          : 0;
 }
