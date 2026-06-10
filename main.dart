@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/budget_provider.dart';
-import 'screens/lock_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'utils/app_theme.dart';
 
 void main() {
@@ -39,7 +39,7 @@ class SeaTurtleApp extends StatelessWidget {
         title: 'Sea Turtle Grants',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.theme,
-        home: const LockScreen(),
+        home: const DashboardScreen(),
       ),
     );
   }
