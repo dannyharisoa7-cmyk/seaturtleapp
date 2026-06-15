@@ -117,9 +117,19 @@ class _GrantDetailCardState extends State<_GrantDetailCard> {
                     children: [
                       Text(widget.item.costCategory, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                       const SizedBox(height: 2),
-                      Text(widget.item.description, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                      Text(
+                        widget.item.description.isNotEmpty ? widget.item.description : 'Pas de description disponible',
+                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                      ),
                     ],
                   ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.info_outline, color: Colors.white70, size: 22),
+                  onPressed: _showDetails,
+                  tooltip: 'Détails',
                 ),
                 Container(
                   width: 50,
@@ -156,6 +166,45 @@ class _GrantDetailCardState extends State<_GrantDetailCard> {
       ),
     );
   }
+
+  void _showDetails() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0D162A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(widget.item.costCategory, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Description', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              Text(
+                widget.item.description.isNotEmpty ? widget.item.description : 'Pas de description disponible',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 16),
+              _DetailLine(label: 'Amendement', value: widget.item.amendment.toFullUSD()),
+              const SizedBox(height: 8),
+              _DetailLine(label: 'Dépensé', value: widget.item.totalSpend.toFullUSD()),
+              const SizedBox(height: 8),
+              _DetailLine(label: 'Solde', value: widget.item.restAgainstAmendment.toFullUSD()),
+              const SizedBox(height: 8),
+              _DetailLine(label: 'Utilisation', value: '${widget.item.utilizationRate.toStringAsFixed(1)} %'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Fermer', style: TextStyle(color: AppColors.accentCyan)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _ProgressBar extends StatelessWidget {
@@ -172,6 +221,24 @@ class _ProgressBar extends StatelessWidget {
         backgroundColor: Colors.white.withOpacity(0.1),
         valueColor: AlwaysStoppedAnimation(util > 0.9 ? AppColors.errorRed : util > 0.7 ? AppColors.warningAmber : AppColors.accentTeal),
       ),
+    );
+  }
+}
+
+class _DetailLine extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailLine({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13)),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }
