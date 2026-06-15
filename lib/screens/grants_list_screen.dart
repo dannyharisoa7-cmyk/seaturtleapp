@@ -104,105 +104,72 @@ class _GrantDetailCardState extends State<_GrantDetailCard> {
 
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
-      child: GlassCard(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        child: GlassCard(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.item.costCategory, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.item.description.isNotEmpty ? widget.item.description : 'Pas de description disponible',
+                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: Icon(Icons.info_outline, color: Colors.white70, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.2), border: Border.all(color: color.withOpacity(0.4))),
+                    child: Center(child: Text('${util * 100 > 100 ? 100 : (util * 100).toStringAsFixed(0)}%', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13))),
+                  ),
+                ],
+              ),
+              if (_expanded) ...[
+                const SizedBox(height: 16),
+                FadeInUp(
+                  duration: const Duration(milliseconds: 300),
+                  child: _ProgressBar(util: util),
+                ),
+                const SizedBox(height: 16),
+                FadeInUp(
+                  delay: const Duration(milliseconds: 80),
+                  duration: const Duration(milliseconds: 300),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(widget.item.costCategory, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.item.description.isNotEmpty ? widget.item.description : 'Pas de description disponible',
-                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                      ),
+                      _DetailLine(label: 'Amendement', value: widget.item.amendment.toFullUSD()),
+                      const SizedBox(height: 10),
+                      _DetailLine(label: 'Dépensé', value: widget.item.totalSpend.toFullUSD()),
+                      const SizedBox(height: 10),
+                      _DetailLine(label: 'Solde', value: widget.item.restAgainstAmendment.toFullUSD()),
+                      const SizedBox(height: 10),
+                      _DetailLine(label: 'Utilisation', value: '${widget.item.utilizationRate.toStringAsFixed(1)} %'),
                     ],
                   ),
                 ),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.info_outline, color: Colors.white70, size: 22),
-                  onPressed: _showDetails,
-                  tooltip: 'Détails',
-                ),
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.2), border: Border.all(color: color.withOpacity(0.4))),
-                  child: Center(child: Text('${util * 100 > 100 ? 100 : (util * 100).toStringAsFixed(0)}%', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13))),
-                ),
               ],
-            ),
-            if (_expanded) ...[
-              const SizedBox(height: 12),
-              _ProgressBar(util: util),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('AMENDEMENT', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.w600)),
-                    Text(widget.item.amendment.toFullUSD(), style: const TextStyle(color: AppColors.accentCyan, fontWeight: FontWeight.w600)),
-                  ]),
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text('DÉPENSÉ', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.w600)),
-                    Text(widget.item.totalSpend.toFullUSD(), style: TextStyle(color: Colors.white.withOpacity(0.8), fontWeight: FontWeight.w600)),
-                  ]),
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text('SOLDE', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.w600)),
-                    Text(widget.item.restAgainstAmendment.toFullUSD(), style: const TextStyle(color: AppColors.accentTeal, fontWeight: FontWeight.w600)),
-                  ]),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDetails() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0D162A),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(widget.item.costCategory, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Description', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              Text(
-                widget.item.description.isNotEmpty ? widget.item.description : 'Pas de description disponible',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 16),
-              _DetailLine(label: 'Amendement', value: widget.item.amendment.toFullUSD()),
-              const SizedBox(height: 8),
-              _DetailLine(label: 'Dépensé', value: widget.item.totalSpend.toFullUSD()),
-              const SizedBox(height: 8),
-              _DetailLine(label: 'Solde', value: widget.item.restAgainstAmendment.toFullUSD()),
-              const SizedBox(height: 8),
-              _DetailLine(label: 'Utilisation', value: '${widget.item.utilizationRate.toStringAsFixed(1)} %'),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Fermer', style: TextStyle(color: AppColors.accentCyan)),
-            ),
-          ],
-        );
-      },
+        ),
+      ),
     );
   }
 }
